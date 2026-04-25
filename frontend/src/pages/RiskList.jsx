@@ -1,94 +1,134 @@
-import { useEffect, useState } from "react";
-import api from "../services/api";
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { getRisks, getStats } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import LoadingSkeleton from '../components/LoadingSkeleton';
+import EmptyState from '../components/EmptyState';
+import Pagination from '../components/Pagination';
+import SearchFilter from '../components/SearchFilter';
+import StatusBadge from '../components/StatusBadge';
+import ScoreBadge from '../components/ScoreBadge';
 
-function RiskList() {
+export default function RiskList() {
+  const { user } = useAuth();
   const [risks, setRisks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
     fetchRisks();
-  }, []);
+  }, [page, searchQuery, statusFilter]);
 
   const fetchRisks = async () => {
+    setLoading(true);
     try {
-      const response = await api.get("/all");
-      setRisks(response.data.content || response.data);
-    } catch (error) {
-      console.error("Error fetching risks:", error);
+      const params = { page, size: 10, sortBy: 'createdAt', sortDir: 'desc' };
+      if (searchQuery) params.q = searchQuery;
 
-      // temporary demo data until backend is ready
-      setRisks([
-        {
-          id: 1,
-          title: "Server Downtime Risk",
-          category: "Technical",
-          status: "OPEN",
-          riskScore: 8,
-          owner: "Shriya",
-        },
-        {
-          id: 2,
-          title: "Data Loss Risk",
-          category: "Security",
-          status: "IN_PROGRESS",
-          riskScore: 9,
-          owner: "Team",
-        },
-      ]);
+      const response = await getRisks(params);
+      setRisks(response.data.content);
+      setTotalPages(response.data.totalPages);
+    } catch (error) {
+      console.error('Failed to fetch risks:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="bg-white p-6 rounded shadow animate-pulse">
-          Loading risk records...
-        </div>
-      </div>
-    );
-  }
+  const fetchStats = async () => {
+    try {
+      const response = await getStats();
+      setStats(response.data);
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+    }
+  };
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    setPage(0);
+  };
+
+  const handleFilterChange = (filters) => {
+    setStatusFilter(filters.status || '');
+    setPage(0);
+  };
+
+  const filteredRisks = statusFilter
+    ? risks.filter(r => r.status === statusFilter)
+    : risks;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Risk Heatmap List</h1>
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Risk Items</h1>
+        {user?.role !== 'VIEWER' && (
+          <Link
+            to="/risks/new"
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-600 min-h-touch"
+          >
+            New Risk
+          </Link>
+        )}
+      </div>
 
-      {risks.length === 0 ? (
-        <div className="bg-white p-6 rounded shadow text-center">
-          No risk records found.
-        </div>
+      <SearchFilter onSearch={handleSearch} onFilterChange={handleFilterChange} />
+
+      {loading ? (
+        <LoadingSkeleton rows={5} />
+      ) : filteredRisks.length === 0 ? (
+        <EmptyState message="No risks found" />
       ) : (
-        <div className="overflow-x-auto bg-white rounded shadow">
-          <table className="w-full border">
-            <thead className="bg-blue-900 text-white">
-              <tr>
-                <th className="p-3 border">ID</th>
-                <th className="p-3 border">Title</th>
-                <th className="p-3 border">Category</th>
-                <th className="p-3 border">Status</th>
-                <th className="p-3 border">Risk Score</th>
-                <th className="p-3 border">Owner</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {risks.map((risk) => (
-                <tr key={risk.id} className="text-center hover:bg-gray-100">
-                  <td className="p-3 border">{risk.id}</td>
-                  <td className="p-3 border">{risk.title}</td>
-                  <td className="p-3 border">{risk.category}</td>
-                  <td className="p-3 border">{risk.status}</td>
-                  <td className="p-3 border">{risk.riskScore}</td>
-                  <td className="p-3 border">{risk.owner}</td>
+        <>
+          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredRisks.map((risk) => (
+                  <tr key={risk.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{risk.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Link to={`/risks/${risk.id}`} className="text-primary hover:underline">
+                        {risk.title}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{risk.category}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <ScoreBadge score={risk.score} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <StatusBadge status={risk.status} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{risk.owner || '-'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {risk.dueDate ? new Date(risk.dueDate).toLocaleDateString() : '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </>
       )}
     </div>
   );
 }
-
-export default RiskList;
