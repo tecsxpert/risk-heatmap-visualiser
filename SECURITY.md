@@ -11,7 +11,6 @@
 
 ## 1. OWASP Top 10 — Threat Model
 
----
 
 ### Risk 1: A01 — Broken Access Control
 
@@ -118,7 +117,6 @@ investigate incidents after the fact.
 
 ## 2. Tool-Specific Security Threats
 
----
 
 ### Threat 1: Risk Score Tampering
 
@@ -241,7 +239,7 @@ breaking Demo Day if it happens then.
 
 ## 3. Week 1 Security Test Results — Day 5
 
-**Date:** 25 April 2026
+**Date:** 24 April 2026
 **Tester:** AI Developer 3
 
 | #   | Endpoint         | Test              | Expected                      | Result                        | Status |
