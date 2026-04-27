@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services.groq_client import GroqClient
+from services.vector_store import store_risk
 import json
 
 batch_bp = Blueprint("batch", __name__)
@@ -60,7 +61,7 @@ Return ONLY valid JSON:
                 "confidence": 0.0,
                 "reasoning": "Failed to parse AI response"
             }
-
+            store_risk(text, parsed)
         results.append(parsed)
 
     return jsonify(results)

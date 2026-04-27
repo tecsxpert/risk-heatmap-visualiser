@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services.groq_client import GroqClient
+from services.vector_store import store_risk
 import json
 
 categorise_bp = Blueprint("categorise", __name__)
@@ -48,6 +49,7 @@ Return ONLY valid JSON:
 
     try:
         parsed = json.loads(response)
+        store_risk(user_text, parsed)
         return jsonify(parsed)
     except Exception:
         return jsonify({
