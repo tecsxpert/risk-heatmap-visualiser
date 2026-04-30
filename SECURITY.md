@@ -298,15 +298,44 @@ Fix: Add X-Content-Type-Options: nosniff header via flask-talisman on Day 12.
 
 ---
 
+## 5. PII Audit — Day 9
+
+**Date:** 30 Apr 2026
+**Tester:** AI Developer 3
+
+### Files Audited
+
+- ai-service/app.py
+- ai-service/routes/sanitise.py
+- ai-service/routes/test_route.py
+
+### Findings
+
+| File         | Pattern Found      | Is PII?                              | Verdict |
+| ------------ | ------------------ | ------------------------------------ | ------- |
+| app.py       | get_remote_address | No — function name for rate limiting | Safe    |
+| routes/\*.py | None               | No PII patterns found                | Safe    |
+
+### Summary
+
+- No personal data (name, email, phone, password, DOB, SSN) found in any prompt or log.
+- IP addresses captured only for rate limiting — this is legitimate and expected.
+- No PII is sent to Groq API in prompts.
+- All clear.
+
+---
+
+---
+
 ## 5. Security Tests Log
 
-| Date        | Test                  | Result  | Notes                                                |
-| ----------- | --------------------- | ------- | ---------------------------------------------------- |
-| 24 Apr 2026 | Week 1 endpoint tests | PASS    | All 6 tests passed - Day 5                           |
-| 28 Apr 2026 | OWASP ZAP baseline    | DONE    | 3 findings — 1 Medium, 2 Low. Report in zap-reports/ |
-| —           | OWASP ZAP active scan | Pending | Scheduled Day 11                                     |
-| —           | PII audit             | Pending | Scheduled Day 9                                      |
-| —           | Final sign-off        | Pending | Scheduled Day 15                                     |
+| Date        | Test                  | Result  | Notes                                                                    |
+| ----------- | --------------------- | ------- | ------------------------------------------------------------------------ |
+| 24 Apr 2026 | Week 1 endpoint tests | PASS    | All 6 tests passed - Day 5                                               |
+| 28 Apr 2026 | OWASP ZAP baseline    | DONE    | 3 findings — 1 Medium, 2 Low. Report in zap-reports/                     |
+| —           | OWASP ZAP active scan | Pending | Scheduled Day 11                                                         |
+| 30 Apr 2026 | PII audit             | PASS    | No PII found in prompts or logs. IP address used only for rate limiting. |
+| —           | Final sign-off        | Pending | Scheduled Day 15                                                         |
 
 ---
 
