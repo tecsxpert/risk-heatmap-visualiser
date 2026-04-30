@@ -205,7 +205,7 @@
     <configuration>
         <url>jdbc:postgresql://localhost:5432/risk_heatmap</url>
         <user>postgres</user>
-        <password>jdkyzm3v32@CR</password>
+        <password>password</password>
     </configuration>
 </plugin>
             <plugin>
