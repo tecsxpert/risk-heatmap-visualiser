@@ -9,7 +9,7 @@ INJECTION_PATTERNS = [
     r"disregard your instructions",
     r"forget your instructions",
     r"\byou are now\b",
-    r"\bact as\b",
+    r"\b act as\b",
     r"pretend you are",
     r"jailbreak",
     r"dan mode",

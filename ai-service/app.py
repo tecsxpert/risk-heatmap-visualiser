@@ -20,4 +20,4 @@ app.register_blueprint(similar_bp)
 app.register_blueprint(query_bp)
 app.register_blueprint(health_bp)
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False, use_reloader=False)

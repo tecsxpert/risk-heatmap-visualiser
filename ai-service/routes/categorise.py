@@ -1,7 +1,8 @@
+from services.cache import get_cached, set_cache
 from flask import Blueprint, request, jsonify
 from services.groq_client import GroqClient
 from services.vector_store import store_risk
-from services.cache import get_cached, set_cache
+import time 
 import json
 
 categorise_bp = Blueprint("categorise", __name__)
@@ -14,10 +15,14 @@ def categorise():
         return jsonify({"error": "Missing 'text' field"}), 400
 
     user_text = data["text"]
+    start_time = time.time()
     # Check cache first
     cached = get_cached(user_text)
+    print("CACHE RESULT:", cached)
     if cached:
-        return jsonify(cached)
+        cached_copy = dict(cached)  # avoid mutating stored data
+        cached_copy["meta"]["cached"] = True
+        return jsonify(cached_copy)
 
     prompt = f"""
     You are a risk analysis AI.
@@ -43,19 +48,46 @@ Rules:
 - Output MUST be valid JSON only
     """
 
-    response = GroqClient.generate_response([
+    ai_response = GroqClient.generate_response([
         {"role": "user", "content": prompt}
     ])
+    response_text = ai_response["content"]
+    tokens_used = ai_response.get("tokens", 0)
 
     try:
         
-        parsed = json.loads(response)
-        store_risk(user_text, parsed)
+        cleaned = response_text.strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.replace("```json", "").replace("```", "").strip()
+
+        if "{" in cleaned:
+            cleaned = cleaned[cleaned.index("{"):]
+
+        parsed = json.loads(cleaned)    
+
+        response_time = int((time.time() - start_time) * 1000)
+        parsed["meta"]= {
+            "confidence": parsed.get("confidence", 0),
+            "model_used": "llama-3.3-70b-versatile",
+            "tokens_used": tokens_used,
+            "response_time_ms": response_time,
+            "cached": False
+        }
+        print("👉 BEFORE CACHE STORE")   # DEBUG
         set_cache(user_text, parsed)
+        print("👉 AFTER CACHE STORE")    # DEBUG
+        store_risk(user_text, parsed)
         return jsonify(parsed)
     except Exception:
         return jsonify({
             "category": "Unknown",
             "confidence": 0.0,
-            "reasoning": "Failed to parse AI response"
-        })
+            "reasoning": "Failed to parse AI response",
+            "meta": {
+                "confidence": 0,
+                "model_used": "llama-3.3-70b-versatile",
+                "tokens_used": 0,
+                "response_time_ms": 0,
+                "cached": False
+            }
+            })

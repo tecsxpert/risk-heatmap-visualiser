@@ -44,7 +44,9 @@ class GroqClient:
                 response.raise_for_status()
 
                 data = response.json()
-                return data["choices"][0]["message"]["content"]
+                return {
+                        "content": data["choices"][0]["message"]["content"],
+                        "tokens": data.get("usage", {}).get("total_tokens", 0)}
 
             except Exception as e:
                 logging.error(f"Groq API error (attempt {attempt+1}): {e}")
