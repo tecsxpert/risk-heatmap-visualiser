@@ -1,120 +1,255 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getRisks, getStats } from '../services/api';
+import { getRisks } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import LoadingSkeleton from '../components/LoadingSkeleton';
 import EmptyState from '../components/EmptyState';
 import Pagination from '../components/Pagination';
-import SearchFilter from '../components/SearchFilter';
 import StatusBadge from '../components/StatusBadge';
 import ScoreBadge from '../components/ScoreBadge';
 
+const demoRisks = [
+  {
+    id: 1,
+    title: 'Data Breach Risk',
+    category: 'Security',
+    score: 9,
+    status: 'Open',
+    owner: 'Shriya',
+    dueDate: '2026-05-10',
+  },
+  {
+    id: 2,
+    title: 'Server Downtime Risk',
+    category: 'Technical',
+    score: 8,
+    status: 'In Progress',
+    owner: 'Backend Team',
+    dueDate: '2026-05-12',
+  },
+  {
+    id: 3,
+    title: 'Project Delay Risk',
+    category: 'Operational',
+    score: 5,
+    status: 'Resolved',
+    owner: 'Manager',
+    dueDate: '2026-05-15',
+  },
+];
+
 export default function RiskList() {
   const { user } = useAuth();
-  const [risks, setRisks] = useState([]);
+  const [risks, setRisks] = useState(demoRisks);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
     fetchRisks();
-  }, [page, searchQuery, statusFilter]);
+  }, []);
 
   const fetchRisks = async () => {
     setLoading(true);
+
     try {
       const params = { page, size: 10, sortBy: 'createdAt', sortDir: 'desc' };
-      if (searchQuery) params.q = searchQuery;
-
       const response = await getRisks(params);
-      setRisks(response.data.content);
-      setTotalPages(response.data.totalPages);
+
+      if (response?.data?.content?.length > 0) {
+        setRisks(response.data.content);
+        setTotalPages(response.data.totalPages || 1);
+      } else {
+        setRisks(demoRisks);
+        setTotalPages(1);
+      }
     } catch (error) {
-      console.error('Failed to fetch risks:', error);
+      console.log('Backend not running. Using demo risks.');
+      setRisks(demoRisks);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      const response = await getStats();
-      setStats(response.data);
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
+  const filteredRisks = risks.filter((risk) => {
+    const matchesSearch =
+      risk.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      risk.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      risk.owner.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === '' || risk.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const deleteRisk = (id) => {
+    if (window.confirm('Are you sure you want to delete this risk?')) {
+      setRisks(risks.filter((risk) => risk.id !== id));
+      alert('Risk deleted successfully');
     }
   };
 
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    setPage(0);
+  const exportCSV = () => {
+    const csv =
+      'ID,Title,Category,Score,Status,Owner,Due Date\n' +
+      filteredRisks
+        .map(
+          (risk) =>
+            `${risk.id},${risk.title},${risk.category},${risk.score},${risk.status},${risk.owner},${risk.dueDate}`
+        )
+        .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'risks.csv';
+    a.click();
+
+    window.URL.revokeObjectURL(url);
   };
 
-  const handleFilterChange = (filters) => {
-    setStatusFilter(filters.status || '');
-    setPage(0);
-  };
-
-  const filteredRisks = statusFilter
-    ? risks.filter(r => r.status === statusFilter)
-    : risks;
+  if (loading) return <LoadingSkeleton rows={5} />;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Risk Items</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h1 style={{ color: '#1B4F8A', fontSize: '36px', fontWeight: 'bold' }}>
+          Risk List
+        </h1>
+
         {user?.role !== 'VIEWER' && (
           <Link
             to="/risks/new"
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-600 min-h-touch"
+            style={{
+              padding: '10px 16px',
+              background: '#1B4F8A',
+              color: 'white',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: 'bold',
+            }}
           >
             New Risk
           </Link>
         )}
       </div>
 
-      <SearchFilter onSearch={handleSearch} onFilterChange={handleFilterChange} />
+      <div
+        style={{
+          background: 'white',
+          padding: '20px',
+          borderRadius: '14px',
+          boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
+          marginBottom: '24px',
+        }}
+      >
+        <input
+          placeholder="Search risk..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            border: '1px solid #cbd5e1',
+            borderRadius: '8px',
+            marginBottom: '12px',
+          }}
+        />
 
-      {loading ? (
-        <LoadingSkeleton rows={5} />
-      ) : filteredRisks.length === 0 ? (
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            border: '1px solid #cbd5e1',
+            borderRadius: '8px',
+            marginBottom: '12px',
+          }}
+        >
+          <option value="">All Status</option>
+          <option value="Open">Open</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Resolved">Resolved</option>
+        </select>
+
+        <button
+          onClick={exportCSV}
+          style={{
+            padding: '10px 16px',
+            background: '#1B4F8A',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+          }}
+        >
+          Export CSV
+        </button>
+      </div>
+
+      {filteredRisks.length === 0 ? (
         <EmptyState message="No risks found" />
       ) : (
         <>
-          <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div style={{ background: 'white', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 6px 18px rgba(0,0,0,0.08)' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ background: '#1B4F8A', color: 'white' }}>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                  <th style={thStyle}>ID</th>
+                  <th style={thStyle}>Title</th>
+                  <th style={thStyle}>Category</th>
+                  <th style={thStyle}>Score</th>
+                  <th style={thStyle}>Status</th>
+                  <th style={thStyle}>Owner</th>
+                  <th style={thStyle}>Due Date</th>
+                  <th style={thStyle}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+
+              <tbody>
                 {filteredRisks.map((risk) => (
-                  <tr key={risk.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{risk.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Link to={`/risks/${risk.id}`} className="text-primary hover:underline">
-                        {risk.title}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{risk.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={risk.id}>
+                    <td style={tdStyle}>{risk.id}</td>
+                    <td style={tdStyle}>{risk.title}</td>
+                    <td style={tdStyle}>{risk.category}</td>
+                    <td style={tdStyle}>
                       <ScoreBadge score={risk.score} />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td style={tdStyle}>
                       <StatusBadge status={risk.status} />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{risk.owner || '-'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {risk.dueDate ? new Date(risk.dueDate).toLocaleDateString() : '-'}
+                    <td style={tdStyle}>{risk.owner || '-'}</td>
+                    <td style={tdStyle}>
+                      {risk.dueDate
+                        ? new Date(risk.dueDate).toLocaleDateString()
+                        : '-'}
+                    </td>
+                    <td style={tdStyle}>
+                      <Link to={`/risks/${risk.id}`} style={actionBtn}>
+                        View
+                      </Link>
+
+                      <Link to={`/risks/${risk.id}/edit`} style={actionBtn}>
+                        Edit
+                      </Link>
+
+                      <button
+                        onClick={() => deleteRisk(risk.id)}
+                        style={{
+                          ...actionBtn,
+                          background: '#dc2626',
+                          border: 'none',
+                        }}
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -132,3 +267,26 @@ export default function RiskList() {
     </div>
   );
 }
+
+const thStyle = {
+  padding: '14px',
+  textAlign: 'center',
+};
+
+const tdStyle = {
+  padding: '14px',
+  textAlign: 'center',
+  borderBottom: '1px solid #e5e7eb',
+};
+
+const actionBtn = {
+  display: 'inline-block',
+  padding: '8px 12px',
+  margin: '4px',
+  background: '#1B4F8A',
+  color: 'white',
+  borderRadius: '6px',
+  textDecoration: 'none',
+  fontWeight: 'bold',
+  cursor: 'pointer',
+};

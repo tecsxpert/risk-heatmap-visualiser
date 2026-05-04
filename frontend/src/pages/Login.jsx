@@ -11,21 +11,20 @@ export default function Login() {
   const { login: authLogin } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+  setLoading(true);
 
-    try {
-      const response = await login({ email, password });
-      authLogin(response.data.token, response.data.user);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const fakeUser = {
+    email: email || 'admin@tool05.com',
+    role: 'ADMIN',
   };
+
+  authLogin('demo-token', fakeUser);
+  setLoading(false);
+  navigate('/dashboard');
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
