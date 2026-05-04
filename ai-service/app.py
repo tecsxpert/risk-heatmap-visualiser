@@ -4,6 +4,7 @@ from routes.batch_categorise import batch_bp
 from routes.similar import similar_bp
 from routes.query import query_bp
 from routes.health import health_bp
+from routes.generate_report import generate_report_bp
 app = Flask(__name__)
 from services.cache import get_stats
 
@@ -19,5 +20,6 @@ app.register_blueprint(batch_bp)
 app.register_blueprint(similar_bp)
 app.register_blueprint(query_bp)
 app.register_blueprint(health_bp)
+app.register_blueprint(generate_report_bp)
 if __name__ == "__main__":
     app.run(debug=False, use_reloader=False)

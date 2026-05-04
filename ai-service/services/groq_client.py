@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 class GroqClient:
 
     @staticmethod
-    def generate_response(messages, max_tokens=300, temperature=0.3):
+    def generate_response(messages, max_tokens=1000, temperature=0.3):
         if not GROQ_API_KEY:
             raise ValueError("GROQ_API_KEY not found")
 
