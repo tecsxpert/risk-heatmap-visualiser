@@ -1,7 +1,7 @@
 # SECURITY.md — Tool-05: Risk Heatmap Visualiser
 
 **Team:** 8 Members
-**Sprint:** 20 April – 15 May 2026
+**Sprint:** 13 April – 08 May 2026
 **Security Reviewer:** AI Developer 3
 **Status:** In Progress
 
@@ -237,7 +237,7 @@ breaking Demo Day if it happens then.
 
 ## 3. Week 1 Security Test Results — Day 5
 
-**Date:** 24 April 2026
+**Date:** 17 April 2026
 **Tester:** AI Developer 3
 
 | #   | Endpoint         | Test              | Expected                      | Result                        | Status |
@@ -257,7 +257,7 @@ breaking Demo Day if it happens then.
 
 ## 4. OWASP ZAP Baseline Scan — Day 7
 
-**Date:** 28 April 2026
+**Date:** 21 April 2026
 **Tool:** OWASP ZAP 2.17.0
 **Target:** http://127.0.0.1:5000/health
 **Report File:** zap-baseline-report.html
@@ -300,7 +300,7 @@ Fix: Add X-Content-Type-Options: nosniff header via flask-talisman on Day 12.
 
 ## 5. PII Audit — Day 9
 
-**Date:** 30 Apr 2026
+**Date:** 23 Apr 2026
 **Tester:** AI Developer 3
 
 ### Files Audited
@@ -329,7 +329,7 @@ Fix: Add X-Content-Type-Options: nosniff header via flask-talisman on Day 12.
 
 ## 6. Week 2 Security Sign-Off — Day 10
 
-**Date:** 1 May 2026
+**Date:** 24 Apr 2026
 **Tester:** AI Developer 3
 
 | #   | Check                                          | Result | Notes                                                     |
@@ -340,7 +340,7 @@ Fix: Add X-Content-Type-Options: nosniff header via flask-talisman on Day 12.
 | 4   | JWT enforcement                                | N/A    | JWT handled by Java backend — AI service sits behind it   |
 | 5   | PII in logs                                    | PASS   | No PII found in Day 9 audit                               |
 
-**Week 2 Sign-Off: AI Developer 3 — 1 May 2026**
+**Week 2 Sign-Off: AI Developer 3 — 24 Apr 2026**
 
 All security controls owned by AI Dev 3 are verified and working.
 
@@ -348,22 +348,49 @@ All security controls owned by AI Dev 3 are verified and working.
 
 ---
 
-## 7. Security Tests Log
+## 7. OWASP ZAP Active Scan — Day 11
+
+**Date:** 27 Apr 2026
+**Tool:** OWASP ZAP 2.17.0
+**Target:** http://127.0.0.1:5000/health
+**Report File:** zap-reports/zap-active-scan-report.html
+
+### Findings
+
+| #   | Alert                                              | Severity | Status                     |
+| --- | -------------------------------------------------- | -------- | -------------------------- |
+| 1   | CSP: Failure to Define Directive with No Fallback  | Medium   | Fixed — Day 11             |
+| 2   | Server Leaks Version Information via Server Header | Low      | Accepted — Dev server only |
+
+### Summary
+
+- Total findings: 2
+- Critical: 0
+- High: 0
+- Medium: 1 — Fixed
+- Low: 1 — Accepted (dev server only, not exposed in production)
+- Improvement from baseline scan: 3 findings → 2 findings
+
+---
+
+---
+
+## 8. Security Tests Log
 
 | Date        | Test                     | Result  | Notes                                                                    |
 | ----------- | ------------------------ | ------- | ------------------------------------------------------------------------ |
-| 24 Apr 2026 | Week 1 endpoint tests    | PASS    | All 6 tests passed - Day 5                                               |
-| 28 Apr 2026 | OWASP ZAP baseline       | PASS    | 3 findings — 1 Medium, 2 Low. Report in zap-reports/                     |
-| 30 Apr 2026 | PII audit                | PASS    | No PII found in prompts or logs. IP address used only for rate limiting. |
-| 1 May 2026  | Week 2 security sign-off | PASS    | Rate limiting, injection rejection, security headers all verified        |
-| —           | OWASP ZAP active scan    | Pending | Scheduled Day 11                                                         |
+| 17 Apr 2026 | Week 1 endpoint tests    | PASS    | All 6 tests passed - Day 5                                               |
+| 21 Apr 2026 | OWASP ZAP baseline       | PASS    | 3 findings — 1 Medium, 2 Low. Report in zap-reports/                     |
+| 23 Apr 2026 | PII audit                | PASS    | No PII found in prompts or logs. IP address used only for rate limiting. |
+| 24 Apr 2026 | Week 2 security sign-off | PASS    | Rate limiting, injection rejection, security headers all verified        |
+| 27 Apr 2026 | OWASP ZAP active scan    | PASS    | 0 Critical, 0 High, 1 Medium, 1 Low. Report in zap-reports/              |
 | —           | Final sign-off           | Pending | Scheduled Day 15                                                         |
 
 ---
 
 ---
 
-## 6. Residual Risks
+## 9. Residual Risks
 
 To be completed after all tests are run (Day 15).
 
@@ -371,7 +398,7 @@ To be completed after all tests are run (Day 15).
 
 ---
 
-## 7. Team Sign-Off
+## 10. Team Sign-Off
 
 To be completed on Day 15 by all 6 team members.
 

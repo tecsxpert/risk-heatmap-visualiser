@@ -14,7 +14,11 @@ talisman = Talisman(
     content_security_policy={
         'default-src': "'self'",
         'script-src': "'self'",
-        'style-src': "'self'"
+        'style-src': "'self'",
+        'img-src': "'self'",
+        'font-src': "'self'",
+        'connect-src': "'self'",
+        'frame-ancestors': "'none'"
     },
     x_content_type_options=True,
     frame_options='DENY',
