@@ -15,15 +15,24 @@ talisman = Talisman(
         'default-src': "'self'",
         'script-src': "'self'",
         'style-src': "'self'",
-        'img-src': "'self'",
+        'img-src': "'self' data:",
         'font-src': "'self'",
         'connect-src': "'self'",
-        'frame-ancestors': "'none'"
+        'frame-ancestors': "'none'",
+        'form-action': "'self'",
+        'base-uri': "'self'"
     },
     x_content_type_options=True,
     frame_options='DENY',
     referrer_policy='strict-origin-when-cross-origin'
 )
+
+# Hide server version from response headers
+@app.after_request
+def hide_server_header(response):
+    response.headers['Server'] = 'webserver'
+    response.headers.remove('X-Powered-By')
+    return response
 
 # Rate limiter — 30 requests per minute default
 limiter = Limiter(
@@ -69,5 +78,8 @@ def generate_report():
         "clean_input": clean_text
     }), 200
 
+import werkzeug.serving
+werkzeug.serving.__version__ = ''
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
