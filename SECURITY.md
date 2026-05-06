@@ -447,14 +447,14 @@ All security controls owned by AI Dev 3 are verified and working.
 
 ## 10. Security Tests Log
 
-| Date        | Test                     | Result  | Notes                                                                    |
-| ----------- | ------------------------ | ------- | ------------------------------------------------------------------------ |
-| 17 Apr 2026 | Week 1 endpoint tests    | PASS    | All 6 tests passed - Day 5                                               |
-| 21 Apr 2026 | OWASP ZAP baseline       | PASS    | 3 findings — 1 Medium, 2 Low. Report in zap-reports/                     |
-| 23 Apr 2026 | PII audit                | PASS    | No PII found in prompts or logs. IP address used only for rate limiting. |
-| 24 Apr 2026 | Week 2 security sign-off | PASS    | Rate limiting, injection rejection, security headers all verified        |
-| 27 Apr 2026 | OWASP ZAP active scan    | PASS    | 0 Critical, 0 High, 1 Medium, 1 Low. Report in zap-reports/              |
-| —           | Final sign-off           | Pending | Scheduled Day 15                                                         |
+| Date        | Test                     | Result | Notes                                                                    |
+| ----------- | ------------------------ | ------ | ------------------------------------------------------------------------ |
+| 17 Apr 2026 | Week 1 endpoint tests    | PASS   | All 6 tests passed - Day 5                                               |
+| 21 Apr 2026 | OWASP ZAP baseline       | PASS   | 3 findings — 1 Medium, 2 Low. Report in zap-reports/                     |
+| 23 Apr 2026 | PII audit                | PASS   | No PII found in prompts or logs. IP address used only for rate limiting. |
+| 24 Apr 2026 | Week 2 security sign-off | PASS   | Rate limiting, injection rejection, security headers all verified        |
+| 27 Apr 2026 | OWASP ZAP active scan    | PASS   | 0 Critical, 0 High, 1 Medium, 1 Low. Report in zap-reports/              |
+| 01 May 2026 | Final sign-off           | PASS   | All 14 checklist items complete, AI Dev 3 signed off                     |
 
 ---
 
@@ -474,13 +474,32 @@ All security controls owned by AI Dev 3 are verified and working.
 
 ## 12. Team Sign-Off
 
-To be completed on Day 15 by all 6 team members.
+**Final Security Checklist:**
 
-| Member | Role             | Signature | Date |
-| ------ | ---------------- | --------- | ---- |
-|        | Java Developer 1 |           |      |
-|        | Java Developer 2 |           |      |
-|        | Java Developer 3 |           |      |
-|        | AI Developer 1   |           |      |
-|        | AI Developer 2   |           |      |
-|        | AI Developer 3   |           |      |
+| #   | Item                                                               | Status |
+| --- | ------------------------------------------------------------------ | ------ |
+| 1   | Input sanitisation middleware implemented and tested               | Done   |
+| 2   | Rate limiting — 30 req/min default, 10 req/min on /generate-report | Done   |
+| 3   | Security headers — CSP, X-Frame-Options, X-Content-Type-Options    | Done   |
+| 4   | OWASP ZAP baseline scan completed                                  | Done   |
+| 5   | OWASP ZAP active scan completed                                    | Done   |
+| 6   | PII audit — no personal data in prompts or logs                    | Done   |
+| 7   | Week 1 security tests — all 6 passed                               | Done   |
+| 8   | Week 2 security sign-off — all controls verified                   | Done   |
+| 9   | Full stack security test completed                                 | Done   |
+| 10  | Final SECURITY.md — executive summary complete                     | Done   |
+| 11  | No secrets committed to GitHub                                     | Done   |
+| 12  | .env in .gitignore                                                 | Done   |
+| 13  | Zero Critical/High ZAP findings remaining                          | Done   |
+| 14  | Residual risks documented and accepted                             | Done   |
+
+**Team Sign-Off:**
+
+| Member          | Role             | Signature | Date        |
+| --------------- | ---------------- | --------- | ----------- |
+|                 | Java Developer 1 |           |             |
+|                 | Java Developer 2 |           |             |
+|                 | Java Developer 3 |           |             |
+|                 | AI Developer 1   |           |             |
+|                 | AI Developer 2   |           |             |
+| Gowri Shankar V | AI Developer 3   | Signed    | 01 May 2026 |
