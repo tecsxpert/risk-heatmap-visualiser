@@ -18,12 +18,18 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = (token, userData) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    setIsAuthenticated(true);
+  const login = (email, password) => {
+  const fakeUser = {
+    email: email,
+    role: "ADMIN"
   };
+
+  localStorage.setItem('token', "demo-token");
+  localStorage.setItem('user', JSON.stringify(fakeUser));
+
+  setUser(fakeUser);
+  setIsAuthenticated(true);
+};
 
   const logout = () => {
     localStorage.removeItem('token');

@@ -182,3 +182,96 @@
     border-right-color: var(--border);
   }
 }
+
+/* Demo styling for Risk Heatmap frontend */
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f7fb;
+  margin: 0;
+  color: #1f2937;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+nav,
+.navbar {
+  background: #1B4F8A;
+  color: white;
+  padding: 14px 24px;
+  text-align: center;
+}
+
+nav a,
+.navbar a,
+a {
+  margin: 0 10px;
+  font-weight: 600;
+  color: #1B4F8A;
+  text-decoration: none;
+}
+
+nav a,
+.navbar a {
+  color: white;
+}
+
+button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #1B4F8A;
+  color: white;
+  cursor: pointer;
+  margin: 6px;
+}
+
+button:hover {
+  background: #163f70;
+}
+
+input,
+select,
+textarea {
+  padding: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  margin: 6px;
+}
+
+h1,
+h2,
+h3 {
+  color: #1B4F8A;
+}
+
+.card,
+.dashboard-card {
+  background: white;
+  padding: 18px;
+  border-radius: 10px;
+  margin: 16px auto;
+  max-width: 900px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+table {
+  width: 90%;
+  margin: 20px auto;
+  border-collapse: collapse;
+  background: white;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+th {
+  background: #1B4F8A;
+  color: white;
+}
