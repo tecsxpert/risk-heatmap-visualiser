@@ -281,26 +281,88 @@ export default function App() {
     );
   };
 
-  const categoryChartData = [
-    { name: "Security", value: risks.filter((r) => r.category === "Security").length },
-    { name: "Technical", value: risks.filter((r) => r.category === "Technical").length },
-    { name: "Operational", value: risks.filter((r) => r.category === "Operational").length },
-  ];
+  const analyticsData = {
+  "3 months": {
+    categoryChartData: [
+      { name: "Security", value: 1 },
+      { name: "Technical", value: 1 },
+      { name: "Operational", value: 1 },
+    ],
 
-  const statusChartData = [
-    { name: "Open", value: openRisks },
-    { name: "In Progress", value: risks.filter((r) => r.status === "In Progress").length },
-    { name: "Resolved", value: resolvedRisks },
-  ];
+    statusChartData: [
+      { name: "Open", value: 1 },
+      { name: "In Progress", value: 1 },
+      { name: "Resolved", value: 1 },
+    ],
 
-  const trendData = [
-    { month: "Jan", risks: 2 },
-    { month: "Feb", risks: 3 },
-    { month: "Mar", risks: 4 },
-    { month: "Apr", risks: 5 },
-    { month: "May", risks: risks.length },
-    { month: "Jun", risks: risks.length + 2 },
-  ];
+    trendData: [
+      { month: "Jan", risks: 1 },
+      { month: "Feb", risks: 2 },
+      { month: "Mar", risks: 3 },
+    ],
+  },
+
+  "6 months": {
+    categoryChartData: [
+      { name: "Security", value: 2 },
+      { name: "Technical", value: 1 },
+      { name: "Operational", value: 1 },
+    ],
+
+    statusChartData: [
+      { name: "Open", value: 2 },
+      { name: "In Progress", value: 1 },
+      { name: "Resolved", value: 1 },
+    ],
+
+    trendData: [
+      { month: "Jan", risks: 2 },
+      { month: "Feb", risks: 3 },
+      { month: "Mar", risks: 4 },
+      { month: "Apr", risks: 5 },
+      { month: "May", risks: 4 },
+      { month: "Jun", risks: 6 },
+    ],
+  },
+
+  "1 year": {
+    categoryChartData: [
+      { name: "Security", value: 4 },
+      { name: "Technical", value: 3 },
+      { name: "Operational", value: 2 },
+    ],
+
+    statusChartData: [
+      { name: "Open", value: 5 },
+      { name: "In Progress", value: 3 },
+      { name: "Resolved", value: 4 },
+    ],
+
+    trendData: [
+      { month: "Jan", risks: 2 },
+      { month: "Feb", risks: 3 },
+      { month: "Mar", risks: 4 },
+      { month: "Apr", risks: 5 },
+      { month: "May", risks: 3 },
+      { month: "Jun", risks: 5 },
+      { month: "Jul", risks: 6 },
+      { month: "Aug", risks: 7 },
+      { month: "Sep", risks: 5 },
+      { month: "Oct", risks: 8 },
+      { month: "Nov", risks: 7 },
+      { month: "Dec", risks: 9 },
+    ],
+  },
+};
+
+const categoryChartData =
+  analyticsData[period].categoryChartData;
+
+const statusChartData =
+  analyticsData[period].statusChartData;
+
+const trendData =
+  analyticsData[period].trendData;
 
   if (!loggedIn && page === "login") {
     return (
