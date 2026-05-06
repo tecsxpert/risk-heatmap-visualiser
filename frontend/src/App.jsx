@@ -1,4 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const demoRisks = [
   {
@@ -39,8 +52,17 @@ export default function App() {
   const [risks, setRisks] = useState(demoRisks);
   const [selectedRisk, setSelectedRisk] = useState(demoRisks[0]);
   const [isEditing, setIsEditing] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+
+  const [sortKey, setSortKey] = useState("title");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [period, setPeriod] = useState("6 months");
+
+  const rowsPerPage = 2;
 
   const [formData, setFormData] = useState({
     title: "Cloud Data Leakage Risk",
@@ -51,6 +73,37 @@ export default function App() {
     owner: "Shriya",
     mitigation: "Apply access control, enable MFA and monitor logs.",
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q") || "";
+    const status = params.get("status") || "";
+
+    setSearchQuery(q);
+    setDebouncedSearch(q);
+    setStatusFilter(status);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+
+    if (debouncedSearch) params.set("q", debouncedSearch);
+    if (statusFilter) params.set("status", statusFilter);
+
+    const newUrl =
+      window.location.pathname +
+      (params.toString() ? `?${params.toString()}` : "");
+
+    window.history.replaceState({}, "", newUrl);
+  }, [debouncedSearch, statusFilter]);
 
   const login = (e) => {
     e.preventDefault();
@@ -67,19 +120,52 @@ export default function App() {
   const openRisks = risks.filter((r) => r.status === "Open").length;
   const resolvedRisks = risks.filter((r) => r.status === "Resolved").length;
 
-  const filteredRisks = risks.filter((risk) => {
-    const search = searchQuery.toLowerCase();
+  const filteredRisks = risks
+    .filter((risk) => {
+      const search = debouncedSearch.toLowerCase();
 
-    const matchesSearch =
-      risk.title.toLowerCase().includes(search) ||
-      risk.category.toLowerCase().includes(search) ||
-      risk.owner.toLowerCase().includes(search) ||
-      risk.status.toLowerCase().includes(search);
+      const matchesSearch =
+        risk.title.toLowerCase().includes(search) ||
+        risk.category.toLowerCase().includes(search) ||
+        risk.owner.toLowerCase().includes(search) ||
+        risk.status.toLowerCase().includes(search);
 
-    const matchesStatus = statusFilter === "" || risk.status === statusFilter;
+      const matchesStatus = statusFilter === "" || risk.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      const valueA = a[sortKey];
+      const valueB = b[sortKey];
+
+      if (sortOrder === "asc") {
+        return valueA > valueB ? 1 : -1;
+      }
+
+      return valueA < valueB ? 1 : -1;
+    });
+
+  const totalPages = Math.max(1, Math.ceil(filteredRisks.length / rowsPerPage));
+
+  const paginatedRisks = filteredRisks.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const handleSort = (key) => {
+    setSortKey(key);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusChange = (e) => {
+    setStatusFilter(e.target.value);
+    setCurrentPage(1);
+  };
 
   const exportCSV = () => {
     const csv =
@@ -185,6 +271,7 @@ export default function App() {
     setIsEditing(false);
     setSearchQuery("");
     setStatusFilter("");
+    setCurrentPage(1);
     setPage("risks");
   };
 
@@ -193,6 +280,27 @@ export default function App() {
       "AI Recommendation: This risk should be prioritized. Suggested actions include monitoring, access control, owner assignment and periodic review."
     );
   };
+
+  const categoryChartData = [
+    { name: "Security", value: risks.filter((r) => r.category === "Security").length },
+    { name: "Technical", value: risks.filter((r) => r.category === "Technical").length },
+    { name: "Operational", value: risks.filter((r) => r.category === "Operational").length },
+  ];
+
+  const statusChartData = [
+    { name: "Open", value: openRisks },
+    { name: "In Progress", value: risks.filter((r) => r.status === "In Progress").length },
+    { name: "Resolved", value: resolvedRisks },
+  ];
+
+  const trendData = [
+    { month: "Jan", risks: 2 },
+    { month: "Feb", risks: 3 },
+    { month: "Mar", risks: 4 },
+    { month: "Apr", risks: 5 },
+    { month: "May", risks: risks.length },
+    { month: "Jun", risks: risks.length + 2 },
+  ];
 
   if (!loggedIn && page === "login") {
     return (
@@ -291,19 +399,16 @@ export default function App() {
         {page === "risks" && (
           <>
             <h1>Risk List</h1>
-            <p className="subtitle">Search, filter and view risks</p>
+            <p className="subtitle">Search, filter, sort and view risks</p>
 
             <div className="panel">
               <input
                 placeholder="Search by title, category, owner or status..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
               />
 
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
+              <select value={statusFilter} onChange={handleStatusChange}>
                 <option value="">All Status</option>
                 <option value="Open">Open</option>
                 <option value="In Progress">In Progress</option>
@@ -317,11 +422,11 @@ export default function App() {
               <table>
                 <thead>
                   <tr>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Score</th>
-                    <th>Owner</th>
+                    <th onClick={() => handleSort("title")}>Title</th>
+                    <th onClick={() => handleSort("category")}>Category</th>
+                    <th onClick={() => handleSort("status")}>Status</th>
+                    <th onClick={() => handleSort("score")}>Score</th>
+                    <th onClick={() => handleSort("owner")}>Owner</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -334,7 +439,7 @@ export default function App() {
                       </td>
                     </tr>
                   ) : (
-                    filteredRisks.map((risk) => (
+                    paginatedRisks.map((risk) => (
                       <tr key={risk.id}>
                         <td>{risk.title}</td>
                         <td>{risk.category}</td>
@@ -362,6 +467,26 @@ export default function App() {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            <div className="pagination">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                Previous
+              </button>
+
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                Next
+              </button>
             </div>
           </>
         )}
@@ -481,28 +606,61 @@ export default function App() {
         {page === "analytics" && (
           <>
             <h1>Analytics</h1>
-            <p className="subtitle">Risk insights using chart-style visualisation</p>
+            <p className="subtitle">Risk insights using Recharts visualisation</p>
+
+            <div className="panel">
+              <label>Period Selector</label>
+              <select value={period} onChange={(e) => setPeriod(e.target.value)}>
+                <option>3 months</option>
+                <option>6 months</option>
+                <option>1 year</option>
+              </select>
+              <p className="subtitle">Selected period: {period}</p>
+            </div>
 
             <div className="grid">
               <div className="panel">
-                <h2>Risk by Status</h2>
-                <div className="bar">
-                  <span style={{ width: "70%" }}>Open</span>
-                </div>
-                <div className="bar">
-                  <span style={{ width: "50%" }}>In Progress</span>
-                </div>
-                <div className="bar">
-                  <span style={{ width: "35%" }}>Resolved</span>
-                </div>
+                <h2>BarChart by Category</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={categoryChartData}>
+                    <XAxis dataKey="name" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#1B4F8A" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
 
               <div className="panel">
-                <h2>Risk Trend</h2>
-                <p>Jan ▇▇</p>
-                <p>Feb ▇▇▇</p>
-                <p>Mar ▇▇▇▇</p>
-                <p>Apr ▇▇▇▇▇</p>
+                <h2>LineChart Over Time</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={trendData}>
+                    <XAxis dataKey="month" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="risks" stroke="#1B4F8A" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="panel">
+                <h2>PieChart by Status</h2>
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={statusChartData}
+                      dataKey="value"
+                      nameKey="name"
+                      outerRadius={80}
+                      label
+                    >
+                      <Cell fill="#1B4F8A" />
+                      <Cell fill="#f59e0b" />
+                      <Cell fill="#16a34a" />
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </>
@@ -583,6 +741,11 @@ function Style() {
 
       button:hover {
         background: #153d6b;
+      }
+
+      button:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
       }
 
       .demo-box {
@@ -678,6 +841,7 @@ function Style() {
         background: #1B4F8A;
         color: white;
         padding: 14px;
+        cursor: pointer;
       }
 
       td {
@@ -746,6 +910,14 @@ function Style() {
       .form {
         max-width: 650px;
         margin: auto;
+      }
+
+      .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 14px;
+        margin-top: 18px;
       }
 
       @media (max-width: 768px) {
