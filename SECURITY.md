@@ -1,5 +1,32 @@
 # SECURITY.md — Tool-05: Risk Heatmap Visualiser
 
+## Executive Summary
+
+This document covers the complete security posture of Tool-05 — Risk Heatmap Visualiser AI Service.
+
+**Security Controls Implemented:**
+
+- Input sanitisation — HTML stripping and prompt injection detection
+- Rate limiting — 30 req/min default, 10 req/min on /generate-report
+- Security headers — CSP, X-Frame-Options, X-Content-Type-Options via flask-talisman
+- PII audit — verified no personal data in prompts or logs
+
+**Testing Conducted:**
+
+- Week 1 endpoint security tests — 6 tests, all passed
+- OWASP ZAP baseline scan — 3 findings, all fixed
+- OWASP ZAP active scan — 2 findings, 1 fixed, 1 accepted
+- PII audit — clean, no PII found
+- Week 2 security sign-off — all controls verified
+- Full stack security test — all AI service controls verified
+
+**Overall Security Status: SECURE**
+
+- Critical findings: 0
+- High findings: 0
+- Medium findings: 1 (fixed — Day 11)
+- Low findings: 1 (accepted — dev server only)
+
 **Team:** 8 Members
 **Sprint:** 13 April – 08 May 2026
 **Security Reviewer:** AI Developer 3
@@ -435,7 +462,11 @@ All security controls owned by AI Dev 3 are verified and working.
 
 ## 11. Residual Risks
 
-To be completed after all tests are run (Day 15).
+| #   | Risk                       | Severity | Reason Accepted                                               |
+| --- | -------------------------- | -------- | ------------------------------------------------------------- |
+| 1   | CSP Fallback Directive     | Medium   | Fixed Day 11 — additional directives added                    |
+| 2   | Server Version Leak        | Low      | Dev server only, production uses Gunicorn which hides version |
+| 3   | JWT/RBAC not in AI service | Low      | JWT enforced by Java backend before requests reach AI service |
 
 ---
 
