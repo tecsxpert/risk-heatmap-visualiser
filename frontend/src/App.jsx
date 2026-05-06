@@ -39,7 +39,6 @@ export default function App() {
   const [risks, setRisks] = useState(demoRisks);
   const [selectedRisk, setSelectedRisk] = useState(demoRisks[0]);
   const [isEditing, setIsEditing] = useState(false);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
@@ -77,8 +76,7 @@ export default function App() {
       risk.owner.toLowerCase().includes(search) ||
       risk.status.toLowerCase().includes(search);
 
-    const matchesStatus =
-      statusFilter === "" || risk.status === statusFilter;
+    const matchesStatus = statusFilter === "" || risk.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
@@ -118,6 +116,20 @@ export default function App() {
       status: risk.status,
       owner: risk.owner,
       mitigation: risk.mitigation,
+    });
+    setPage("form");
+  };
+
+  const resetFormForNewRisk = () => {
+    setIsEditing(false);
+    setFormData({
+      title: "Cloud Data Leakage Risk",
+      category: "Security",
+      description: "Risk of confidential files being accessed by unauthorized users.",
+      impact: "High",
+      status: "Open",
+      owner: "Shriya",
+      mitigation: "Apply access control, enable MFA and monitor logs.",
     });
     setPage("form");
   };
@@ -171,6 +183,8 @@ export default function App() {
     }
 
     setIsEditing(false);
+    setSearchQuery("");
+    setStatusFilter("");
     setPage("risks");
   };
 
@@ -215,28 +229,10 @@ export default function App() {
 
       <nav className="navbar">
         <h2>Risk Heatmap Visualiser</h2>
-
         <div>
           <button onClick={() => setPage("dashboard")}>Dashboard</button>
           <button onClick={() => setPage("risks")}>Risks</button>
-          <button
-            onClick={() => {
-              setIsEditing(false);
-              setFormData({
-                title: "Cloud Data Leakage Risk",
-                category: "Security",
-                description:
-                  "Risk of confidential files being accessed by unauthorized users.",
-                impact: "High",
-                status: "Open",
-                owner: "Shriya",
-                mitigation: "Apply access control, enable MFA and monitor logs.",
-              });
-              setPage("form");
-            }}
-          >
-            Add Risk
-          </button>
+          <button onClick={resetFormForNewRisk}>Add Risk</button>
           <button onClick={() => setPage("analytics")}>Analytics</button>
           <button onClick={logout}>Logout</button>
         </div>
@@ -253,17 +249,14 @@ export default function App() {
                 <h3>Total Risks</h3>
                 <p>{risks.length}</p>
               </div>
-
               <div className="card danger">
                 <h3>High Score (7+)</h3>
                 <p>{highRisks}</p>
               </div>
-
               <div className="card warning">
                 <h3>Open Risks</h3>
                 <p>{openRisks}</p>
               </div>
-
               <div className="card success">
                 <h3>Resolved</h3>
                 <p>{resolvedRisks}</p>
@@ -285,9 +278,7 @@ export default function App() {
 
             <section className="panel">
               <h2>Risk Heatmap</h2>
-              <p className="subtitle">
-                Visual representation of risk severity levels
-              </p>
+              <p className="subtitle">Visual representation of risk severity levels</p>
               <div className="heatmap">
                 <div className="heat low">Low Risk</div>
                 <div className="heat medium">Medium Risk</div>
@@ -322,65 +313,62 @@ export default function App() {
               <button onClick={exportCSV}>Export CSV</button>
             </div>
 
-            <table>
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Category</th>
-                  <th>Status</th>
-                  <th>Score</th>
-                  <th>Owner</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredRisks.length === 0 ? (
+            <div className="table-wrapper">
+              <table>
+                <thead>
                   <tr>
-                    <td colSpan="6" className="empty-row">
-                      No matching risks found
-                    </td>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Score</th>
+                    <th>Owner</th>
+                    <th>Action</th>
                   </tr>
-                ) : (
-                  filteredRisks.map((risk) => (
-                    <tr key={risk.id}>
-                      <td>{risk.title}</td>
-                      <td>{risk.category}</td>
-                      <td>
-                        <span className="badge">{risk.status}</span>
-                      </td>
-                      <td>
-                        <b>{risk.score}</b>
-                      </td>
-                      <td>{risk.owner}</td>
-                      <td>
-                        <button
-                          onClick={() => {
-                            setSelectedRisk(risk);
-                            setPage("detail");
-                          }}
-                        >
-                          View
-                        </button>
+                </thead>
 
-                        <button onClick={() => openEditForm(risk)}>Edit</button>
-
-                        <button onClick={() => deleteRisk(risk.id)}>
-                          Delete
-                        </button>
+                <tbody>
+                  {filteredRisks.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="empty-row">
+                        🔍 No risks found. Try different search or filter.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    filteredRisks.map((risk) => (
+                      <tr key={risk.id}>
+                        <td>{risk.title}</td>
+                        <td>{risk.category}</td>
+                        <td>
+                          <span className="badge">{risk.status}</span>
+                        </td>
+                        <td>
+                          <b>{risk.score}</b>
+                        </td>
+                        <td>{risk.owner}</td>
+                        <td>
+                          <button
+                            onClick={() => {
+                              setSelectedRisk(risk);
+                              setPage("detail");
+                            }}
+                          >
+                            View
+                          </button>
+                          <button onClick={() => openEditForm(risk)}>Edit</button>
+                          <button onClick={() => deleteRisk(risk.id)}>Delete</button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
 
         {page === "form" && (
           <>
             <h1>{isEditing ? "Edit Risk" : "Create Risk"}</h1>
-
             <form className="panel form">
               <label>Title</label>
               <input
@@ -460,27 +448,20 @@ export default function App() {
         {page === "detail" && (
           <>
             <h1>Risk Detail</h1>
-
             <section className="panel">
               <h2>{selectedRisk.title}</h2>
-
               <p>
                 <b>Category:</b> {selectedRisk.category}
               </p>
-
               <p>
-                <b>Status:</b>{" "}
-                <span className="badge">{selectedRisk.status}</span>
+                <b>Status:</b> <span className="badge">{selectedRisk.status}</span>
               </p>
-
               <p>
                 <b>Risk Score:</b> {selectedRisk.score}
               </p>
-
               <p>
                 <b>Description:</b> {selectedRisk.description}
               </p>
-
               <p>
                 <b>Mitigation:</b> {selectedRisk.mitigation}
               </p>
@@ -500,9 +481,7 @@ export default function App() {
         {page === "analytics" && (
           <>
             <h1>Analytics</h1>
-            <p className="subtitle">
-              Risk insights using chart-style visualisation
-            </p>
+            <p className="subtitle">Risk insights using chart-style visualisation</p>
 
             <div className="grid">
               <div className="panel">
@@ -680,8 +659,14 @@ function Style() {
       .warning p { color: #f59e0b; }
       .success p { color: #16a34a; }
 
+      .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+      }
+
       table {
         width: 100%;
+        min-width: 760px;
         background: white;
         border-collapse: collapse;
         border-radius: 12px;
@@ -767,10 +752,48 @@ function Style() {
         .navbar {
           flex-direction: column;
           gap: 12px;
+          text-align: center;
+        }
+
+        .navbar div {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+
+        .navbar button {
+          width: 45%;
+          margin: 4px;
+        }
+
+        .container {
+          margin: 20px auto;
+          padding: 0 12px;
         }
 
         h1 {
-          font-size: 32px;
+          font-size: 30px;
+        }
+
+        .login-card {
+          width: 90%;
+          padding: 24px;
+        }
+
+        .cards {
+          grid-template-columns: 1fr;
+        }
+
+        .grid,
+        .heatmap {
+          grid-template-columns: 1fr;
+        }
+
+        input,
+        select,
+        textarea,
+        button {
+          font-size: 15px;
         }
       }
     `}</style>
